@@ -12,5 +12,9 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, '') // '/api' 제거하고 프록시
       }
     }
+  },
+  build: {
+    outDir: '../SpringBootPrj/src/main/resources/static',
+    emptyOutDir: true
   }
 })
