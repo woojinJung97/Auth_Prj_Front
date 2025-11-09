@@ -10,6 +10,7 @@ import { createVuetify } from 'vuetify';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import router from './components/router';
+import { createPinia } from 'pinia';
 
 // Vuetify 인스턴스 생성
 const vuetify = createVuetify({
@@ -17,9 +18,12 @@ const vuetify = createVuetify({
   directives,
 });
 
+const pinia = createPinia()
+
 // Vue 인스턴스 생성 및 Vuetify 플러그인 적용
 createApp(App)
 .use(vuetify)
+.use(pinia)
 .use(router)
 .mount('#app');
 
