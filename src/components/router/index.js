@@ -1,23 +1,33 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import AuthMgntView from '../views/AuthMgntView.vue'; // 경로에 맞게 조정
-import TheWelcome from '../TheWelcome.vue'; // 기본 페이지로 사용될 컴포넌트
+import { createRouter, createWebHistory } from 'vue-router'
+import LoginView from '@/views/LoginView.vue'
+import SignupView from '@/views/SignupView.vue'
+import HomeView from '@/views/HomeView.vue'
 
 const routes = [
   {
-    path: '/auth',
-    name: 'AuthManagement',
-    component: AuthMgntView, // /auth 경로에서는 AuthMgntView만 보여줍니다.
+    path: '/',
+    redirect: '/login', // 기본 접속시 로그인 페이지로 이동
   },
   {
-    path: '/',
-    name: 'Home',
-    component: TheWelcome, // 홈 페이지에서는 TheWelcome을 보여줍니다.
+    path: '/login',
+    name: 'LoginView',
+    component: LoginView,
   },
-];
+  {
+    path: '/signup',
+    name: 'SignupView',
+    component: SignupView,
+  },
+  {
+    path: '/home',
+    name: 'HomeView',
+    component: HomeView,
+  },
+]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-});
+})
 
-export default router;
+export default router
