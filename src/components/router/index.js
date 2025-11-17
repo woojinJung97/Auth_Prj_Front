@@ -2,11 +2,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
 import SignupView from '@/views/SignupView.vue'
 import HomeView from '@/views/HomeView.vue'
+import MyHomeView from '@/views/MyHomeView.vue'
 
 const routes = [
   {
     path: '/',
-    redirect: '/login', // 기본 접속시 로그인 페이지로 이동
+    redirect: '/home', // 기본 접속시 로그인 페이지로 이동
   },
   {
     path: '/login',
@@ -23,6 +24,11 @@ const routes = [
     name: 'HomeView',
     component: HomeView,
   },
+  {
+    path: '/my-home',
+    name: 'MyHomeView',
+    component: MyHomeView,
+  }
 ]
 
 const router = createRouter({
