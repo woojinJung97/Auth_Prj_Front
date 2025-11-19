@@ -2,7 +2,9 @@
   <v-app>
     <!-- 로그인 / 회원가입 페이지가 아닐 때만 헤더 표시 -->
     <HeaderView v-if="!isAuthPage" />
-      <router-view />
+      <v-main class="main-content-area">
+        <router-view />
+      </v-main>
   </v-app>
 </template>
 

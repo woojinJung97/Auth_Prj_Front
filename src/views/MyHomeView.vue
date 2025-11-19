@@ -92,13 +92,13 @@
 
                 <v-col cols="12" sm="6">
                   <label class="field-label">등급</label>
-                  <v-chip class="level-chip" color="amber lighten-2" text-color="#04203a">{{ user.user?.level || '일반' }}</v-chip>
+                  <v-chip class="level-chip" color="amber lighten-2" text-color="#04203a">{{ form.rate }}</v-chip>
                 </v-col>
 
                 <v-col cols="12" sm="6">
                   <label class="field-label">가입일</label>
                   <v-text-field
-                    :value="regDate"
+                    v-model="displayRegDate"
                     dense
                     hide-details
                     rounded
@@ -115,6 +115,7 @@
               <v-btn text small color="secondary" v-if="anyEditing" @click="cancelAll">취소</v-btn>
             </div>
             <div class="action-right">
+              <v-btn color="error" @click="userDelete()">회원탈퇴</v-btn>
               <v-btn color="primary" :disabled="!anyEditing || !validForSave" @click="save">저장</v-btn>
             </div>
           </v-card-actions>
@@ -129,17 +130,27 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useUserStore } from '@/store/useUserStore'
+import { useRouter } from 'vue-router'
 
 const user = useUserStore()
+const router = useRouter()
 const loading = ref(false)
 
-// form state
 const form = ref({
+  userId: user.user?.userId,
   email: user.user?.email,
   role: user.user?.role,
   rate: user.user?.rate,
   nickname: user.user?.nickname,
   regDate: user.user?.regDate
+})
+
+const displayRegDate = computed(() => {
+  const raw = form.value.regDate || user.user?.regDate || ''
+  if (!raw) return ''
+  const d = new Date(raw)
+  if (isNaN(d.getTime())) return raw
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
 })
 
 const editing = reactive({ email: false, password: false, nickname: false })
@@ -150,7 +161,7 @@ const snackbar = reactive({ show: false, text: '', color: 'success' })
 
 const formRef = ref(null)
 
-onMounted(async () => {
+const fetchUser = async () => {
     loading.value = true
     try {
         const res = await user.fetchUserInfo()
@@ -176,15 +187,9 @@ onMounted(async () => {
     } finally {
         loading.value = false
     }
-})
+}
 
-const regDate = computed(() => {
-  const raw = user.user?.regDate || user.user?.regDate || user.user?.created || ''
-  if (!raw) return ''
-  const d = new Date(raw)
-  if (isNaN(d.getTime())) return raw
-  return d.toLocaleString()
-})
+onMounted(fetchUser)
 
 const rules = {
   required: v => !!v || '필수 입력입니다.',
@@ -193,17 +198,14 @@ const rules = {
 }
 
 function toggleEdit(field) {
-  // if currently editing, cancel that field
   if (editing[field]) {
     cancelField(field)
     return
   }
-  // enable editing for this single field
   editing[field] = true
 }
 
 function cancelField(field) {
-  // reset only that field
   if (field === 'email') form.value.email = user.user?.email || ''
   if (field === 'nickname') form.value.nickname = user.user?.nickname || ''
   if (field === 'password') form.value.password = ''
@@ -217,7 +219,6 @@ function cancelAll() {
 }
 
 const validForSave = computed(() => {
-  // only validate fields that are being edited
   if (editing.email) {
     if (!rules.required(form.value.email) || rules.email(form.value.email) === false) return false
     if (rules.email(form.value.email) !== true && typeof rules.email(form.value.email) === 'string') return false
@@ -231,54 +232,83 @@ const validForSave = computed(() => {
   return true
 })
 
-const save = (async () => {
-    if (!validForSave.value) {
-        snackbar.text = '입력값을 확인하세요.'
-        snackbar.color = 'error'
-        snackbar.show = true
-        return
-    }
+const save = async () => {
+  if (!validForSave.value) {
+    snackbar.text = '입력값을 확인하세요.'
+    snackbar.color = 'error'
+    snackbar.show = true
+    return
+  }
 
-    const updateUser = await user.updateUserInfo(form.value)
-    
-    if (!updateUser) {
-        snackbar.text = '사용자 정보 업데이트에 실패했습니다.'
-        snackbar.color = 'error'
-        snackbar.show = true
-        return
-    }
-    // update successful
-    editing.email = false
-    editing.password = false
-    editing.nickname = false
+  const changes = {}
+  if (editing.email) changes.email = form.value.email
+  if (editing.nickname) changes.nickname = form.value.nickname
+  if (editing.password && form.value.password) changes.password = form.value.password
+
+  if (!Object.keys(changes).length) {
+    snackbar.text = '변경된 항목이 없습니다.'
+    snackbar.color = 'warning'
+    snackbar.show = true
+    return
+  }
+
+  try {
+    const updated = await user.updateUserInfo(changes)
+
+    form.value.email = updated?.email ?? form.value.email
+    form.value.nickname = updated?.nickname ?? form.value.nickname
+
+    editing.email = editing.password = editing.nickname = false
     form.value.password = ''
-
 
     snackbar.text = '변경사항이 저장되었습니다.'
     snackbar.color = 'success'
     snackbar.show = true
+    
+    fetchUser()
+    } catch (error) {
+        console.error(error)
+        snackbar.text = '사용자 정보 업데이트에 실패했습니다.'
+        snackbar.color = 'error'
+        snackbar.show = true
+    }
+}
 
-    await user.fetchUserInfo()
-})
+const userDelete = async () => {
+  if (!confirm('정말로 회원탈퇴를 진행하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return
 
-// keep local form in sync if user.user changes elsewhere
+  try {
+    await user.deleteUser(form.value.userId)
+    snackbar.text = '회원탈퇴가 완료되었습니다.'
+    snackbar.color = 'success'
+    snackbar.show = true
+    // 로그아웃 후 로그인 페이지로 이동
+    document.cookie = "token=; max-age=0; path=/"
+    router.push('/login')
+  } catch (error) {
+    console.error(error)
+    snackbar.text = '회원탈퇴에 실패했습니다.'
+    snackbar.color = 'error'
+    snackbar.show = true
+  }
+}
+
 watch(() => user.user, (u) => {
   form.value.email = u?.email || ''
   form.value.nickname = u?.nickname || ''
 })
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .profile-container {
   min-height: 100vh;
   padding: 28px 20px;
   background: linear-gradient(135deg,#071033 0%, #0b3a66 60%);
   color: #f8fafc;
   display: block;
-  margin-left: 260px; /* leave space for navigation drawer */
+  margin-left: 260px;
 }
 
-/* when drawer collapses on small screens */
 @media (max-width: 960px) {
   .profile-container { margin-left: 72px; padding: 16px 12px; }
 }
@@ -296,7 +326,6 @@ watch(() => user.user, (u) => {
 .action-left { display:flex; align-items:center; gap:8px; }
 .action-right { display:flex; align-items:center; gap:8px; }
 
-/* field row with inline edit button */
 .field-row { display:flex; align-items:flex-start; gap:12px; }
 .field-meta { flex: 1; }
 .field-action { display:flex; align-items:center; }

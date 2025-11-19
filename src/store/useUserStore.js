@@ -31,14 +31,18 @@ export const useUserStore = defineStore('user', {
             }
         },
 
-        async updateUserInfo() {
+        async updateUserInfo(changes) {
             this.loading = true
             this.error = null
             try {
-                const response = await api.patch('/api/users/myhome', this.user)
-                
-                this.user = response.data
-                return response.data
+                if (!changes || Object.keys(changes).length === 0) {
+                    throw new Error('변경된 정보가 없습니다.')
+                }
+
+                const { data } = await api.patch('/api/users/myhome', changes)
+
+                this.user = { ...this.user, ...data }
+                return data
             } catch (error) {
                 this.error = error.response?.data || error
                 throw error
@@ -46,6 +50,21 @@ export const useUserStore = defineStore('user', {
                 this.loading = false
             }
         },
+
+        async deleteUser() {
+            this.loading = true
+            this.error = null
+            try {
+                const { data } = await api.delete('/api/users/myhome')
+                console.log(data);
+                
+            } catch (error) {
+                this.error = error.response?.data || error
+                throw error
+            } finally {
+                this.loading = false
+            }
+        }
 
     }
 })

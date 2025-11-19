@@ -67,7 +67,7 @@ const login = async () => {
     await authStore.login(email.value, password.value)
   } catch (error) {
     console.error('Login failed', error)
-    alert('Login failed!')
+    alert('아이디/비밀번호를 확인해주세요.')
   }
 }
 
