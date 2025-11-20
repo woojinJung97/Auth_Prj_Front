@@ -306,7 +306,6 @@ watch(() => user.user, (u) => {
   background: linear-gradient(135deg,#071033 0%, #0b3a66 60%);
   color: #f8fafc;
   display: block;
-  margin-left: 260px;
 }
 
 @media (max-width: 960px) {

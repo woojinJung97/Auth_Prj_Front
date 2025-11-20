@@ -97,7 +97,7 @@ const logout = () => {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .custom-drawer {
   width: 260px;
   background: linear-gradient(180deg,#0b2546 0%, #133a6b 60%);

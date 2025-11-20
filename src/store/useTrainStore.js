@@ -23,6 +23,7 @@ export const useTrainStore = defineStore('useTrain', {
         defaultArrPlaceId: 'NAT011668',
         defaultDepPlandTime: getDynamicDate(),
         stationList: [],
+        trainDetail: null,
     }),
     actions: {
         async fetchUserTrains(criteria) {
@@ -45,12 +46,11 @@ export const useTrainStore = defineStore('useTrain', {
         },
 
         async fetchStationList() {
-            this.loading = true
-            this.error = null
             try {
                 const response = await api.get('/api/train/train-station')
-                this.stationList = response.data
-                return response.data
+                this.stationList = response.data.data
+                
+                // return response.data
             } catch (error) {
                 console.error('열차 정보를 불러오는 데 실패했습니다.', error)
                 this.error = error
@@ -58,6 +58,24 @@ export const useTrainStore = defineStore('useTrain', {
             } finally {
                 this.loading = false
             }
+        },
+
+        async fetchTrainDetails(detailParam) {
+            this.loading = true
+            this.error = null
+            try {
+                const response = await api.get('/api/train/detail', {
+                    params: detailParam
+                })
+                this.trainDetail = response.data.data
+            } catch (error) {
+                console.error('열차 상세 정보를 불러오는 데 실패했습니다.', error)
+                this.error = error
+                throw error
+            } finally {
+                this.loading = false
+            }
         }
+
     }
 })

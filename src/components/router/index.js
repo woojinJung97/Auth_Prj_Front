@@ -4,6 +4,7 @@ import SignupView from '@/views/SignupView.vue'
 import HomeView from '@/views/HomeView.vue'
 import MyHomeView from '@/views/MyHomeView.vue'
 import TrainSearchView from '@/views/TrainSearchView.vue'
+import TrainDetailView from '@/views/TrainDetailView.vue'
 
 const routes = [
   {
@@ -34,6 +35,12 @@ const routes = [
     path: '/train',
     name: 'TrainSearchView',
     component: TrainSearchView,
+  },
+  {
+    path: '/train/detail/:trainno',
+    name: 'TrainDetailView',
+    component: TrainDetailView,
+    props: true,
   }
 ]
 

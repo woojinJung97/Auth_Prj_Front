@@ -75,7 +75,7 @@ const goToHotel = () => {
 };
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .home-container {
   position: relative;
   background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 40%, #60a5fa 100%);
