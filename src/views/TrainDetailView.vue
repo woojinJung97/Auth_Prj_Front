@@ -108,10 +108,6 @@ const detailParam = ref({
     trainno: props.trainno
 })
 
-onMounted(async () => {
-    await trainStore.fetchTrainDetails(detailParam.value);
-});
-
 // ---------------------------------------------------------------------
 // 2. 유틸리티 함수 정의 (시간 및 운임 포맷팅)
 // ---------------------------------------------------------------------
@@ -153,6 +149,7 @@ const formatCharge = (charge) => {
 // 3. Pinia/라우터에서 데이터를 로드하는 로직이 추가될 수 있습니다.
 // onMounted(() => { /* API 호출 로직 */ });
 // ---------------------------------------------------------------------
-
-// setup 스크립트는 별도의 반환 없이 변수와 함수를 템플릿에 직접 노출합니다.
+onMounted(async () => {
+    await trainStore.fetchTrainDetails(detailParam.value);
+});
 </script>

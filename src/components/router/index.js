@@ -5,6 +5,7 @@ import HomeView from '@/views/HomeView.vue'
 import MyHomeView from '@/views/MyHomeView.vue'
 import TrainSearchView from '@/views/TrainSearchView.vue'
 import TrainDetailView from '@/views/TrainDetailView.vue'
+import TrainSeatPickerView from '@/views/TrainSeatPickerView.vue'
 
 const routes = [
   {
@@ -41,7 +42,12 @@ const routes = [
     name: 'TrainDetailView',
     component: TrainDetailView,
     props: true,
-  }
+  },
+  {
+    path: '/train/seat',
+    name: 'TrainSeatPickerView',
+    component: TrainSeatPickerView
+  },
 ]
 
 const router = createRouter({
