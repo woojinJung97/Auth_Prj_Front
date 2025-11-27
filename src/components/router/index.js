@@ -44,9 +44,10 @@ const routes = [
     props: true,
   },
   {
-    path: '/train/seat',
+    path: '/train/seat/:trainno',
     name: 'TrainSeatPickerView',
-    component: TrainSeatPickerView
+    component: TrainSeatPickerView,
+    props: true,
   },
 ]
 

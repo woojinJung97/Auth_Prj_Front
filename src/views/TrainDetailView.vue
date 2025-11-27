@@ -76,7 +76,7 @@
 
       <v-card-actions class="pa-5 bg-grey-lighten-3">
         <v-spacer></v-spacer>
-        <v-btn color="primary" size="large" elevation="3">
+        <v-btn color="primary" size="large" elevation="3" @click="goToSeatReserv">
           <v-icon left>mdi-ticket-confirmation</v-icon>
           예약하기
         </v-btn>
@@ -86,11 +86,13 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useTrainStore } from '@/store/useTrainStore'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 
-const trainStore = useTrainStore();
+const trainStore = useTrainStore()
+const router = useRouter()
 
 const props = defineProps({
   trainno: {
@@ -101,12 +103,12 @@ const props = defineProps({
 
 const { trainDetail, defaultDepPlaceId, defaultArrPlaceId, defaultDepPlandTime } = storeToRefs(trainStore)
 
-const detailParam = ref({
+const detailParam = computed( () => ({
     depPlaceId : defaultDepPlaceId.value,
     arrPlaceId : defaultArrPlaceId.value,
     depPlandTime : defaultDepPlandTime.value,
     trainno: props.trainno
-})
+}))
 
 // ---------------------------------------------------------------------
 // 2. 유틸리티 함수 정의 (시간 및 운임 포맷팅)
@@ -116,40 +118,47 @@ const detailParam = ref({
  * YYYYMMDDHHMMSS 형태의 숫자를 'MM/DD (요일) HH:MM' 문자열로 포맷팅합니다.
  */
 const formatDateTime = (datetime) => {
-  if (!datetime) return '-';
-  const s = String(datetime);
-  if (s.length < 14) return s; // 데이터 길이가 맞지 않으면 원본 반환
+  if (!datetime) return '-'
+  const s = String(datetime)
+  if (s.length < 14) return s // 데이터 길이가 맞지 않으면 원본 반환
   
-  const year = s.substring(0, 4);
-  const month = s.substring(4, 6);
+  const year = s.substring(0, 4)
+  const month = s.substring(4, 6)
   const day = s.substring(6, 8);
-  const hour = s.substring(8, 10);
-  const minute = s.substring(10, 12);
+  const hour = s.substring(8, 10)
+  const minute = s.substring(10, 12)
 
   // Date 객체 생성을 위해 ISO 형식으로 변환 (YYYY-MM-DDTHH:MM:SS)
-  const dateString = `${year}-${month}-${day}T${hour}:${minute}:00`;
-  const date = new Date(dateString);
+  const dateString = `${year}-${month}-${day}T${hour}:${minute}:00`
+  const date = new Date(dateString)
 
   // 요일 배열 (한국어)
-  const days = ['일', '월', '화', '수', '목', '금', '토'];
-  const dayOfWeek = days[date.getDay()];
+  const days = ['일', '월', '화', '수', '목', '금', '토']
+  const dayOfWeek = days[date.getDay()]
 
-  return `${month}/${day} (${dayOfWeek}) ${hour}:${minute}`;
-};
+  return `${month}/${day} (${dayOfWeek}) ${hour}:${minute}`
+}
 
 /**
  * 숫자를 쉼표가 포함된 화폐 단위 문자열로 포맷팅합니다.
  */
 const formatCharge = (charge) => {
-  if (typeof charge !== 'number') return '0 원';
-  return charge.toLocaleString('ko-KR') + ' 원';
+  if (typeof charge !== 'number') return '0 원'
+  return charge.toLocaleString('ko-KR') + ' 원'
 };
+
+// 예약하기 버튼
+const goToSeatReserv = () => {
+  const trainno = detailParam.value.trainno
+  router.push({ name: 'TrainSeatPickerView', params: {trainno: trainno}})
+   
+}
 
 // ---------------------------------------------------------------------
 // 3. Pinia/라우터에서 데이터를 로드하는 로직이 추가될 수 있습니다.
 // onMounted(() => { /* API 호출 로직 */ });
 // ---------------------------------------------------------------------
 onMounted(async () => {
-    await trainStore.fetchTrainDetails(detailParam.value);
+    await trainStore.fetchTrainDetails(detailParam.value)
 });
 </script>

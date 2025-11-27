@@ -55,28 +55,55 @@
 </template>
 
 <script setup>
-import SeatItem from '@/components/SeatItem.vue';
-import { ref } from 'vue';
+import SeatItem from '@/components/SeatItem.vue'
+import { useTrainStore } from '@/store/useTrainStore'
+import { onMounted, ref } from 'vue'
 
 const seatStates = ref({})
+const seatStore = useTrainStore()
+
+const props = defineProps({
+  trainno: {
+    type: [String, Number],
+    required: true,
+  }
+})
 
 // 초기 좌석 데이터 할당
 const initSeats = () => {
-    const states = [];
+    const states = {};
     for (let row =1; row <= 15; row++) {
         for (const col of ['A', 'B', 'C', 'D']) {
             const id = `${row}${col}`
-            states[id] = seatStates.value
+            states[id] = 'available'
         }
     }
+    seatStates.value = states
 }
-initSeats()
+
 
 const handleStatusUpdate = (seatId, newStatus) => {
     if (seatStates.value[seatId] !== 'occupied') {
         seatStates.value[seatId] = newStatus
     }
 }
+
+const seatsInfo = async () => {
+    const reservedSeats = await seatStore.fetchSeats({ trainno: props.trainno })
+    
+    if (reservedSeats && reservedSeats.length > 0) {
+      reservedSeats.forEach(seatId => {
+        if (seatStates.value[seatId] === 'available') {
+          seatStates.value[seatId] = 'occupied'
+        }
+      })
+    }
+}
+
+onMounted( async () => {
+  initSeats()
+  await seatsInfo()
+})
 </script>
 
 <style scoped>

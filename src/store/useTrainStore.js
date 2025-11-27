@@ -24,6 +24,7 @@ export const useTrainStore = defineStore('useTrain', {
         defaultDepPlandTime: getDynamicDate(),
         stationList: [],
         trainDetail: null,
+        seatInfo: [],
     }),
     actions: {
         async fetchUserTrains(criteria) {
@@ -35,6 +36,8 @@ export const useTrainStore = defineStore('useTrain', {
                 })
                 
                 this.trainList = response.data
+                console.log(response.data);
+                
                 return response.data
             } catch (error) {
                 console.error('열차 정보를 불러오는 데 실패했습니다.', error)
@@ -67,6 +70,7 @@ export const useTrainStore = defineStore('useTrain', {
                 const response = await api.get('/api/train/detail', {
                     params: detailParam
                 })
+                
                 this.trainDetail = response.data.data
             } catch (error) {
                 console.error('열차 상세 정보를 불러오는 데 실패했습니다.', error)
@@ -75,7 +79,40 @@ export const useTrainStore = defineStore('useTrain', {
             } finally {
                 this.loading = false
             }
-        }
+        },
+
+        async fetchSeats(trainno) {
+            this.loading = true
+            this.error = null
+            try {
+                const response = await api.get('/api/train/seat-info', {
+                    params: trainno
+                })
+                
+                this.seatInfo = response.data.data
+
+                return response.data.data
+            } catch (error) {
+                console.error('좌석조회에 실패했습니다.', error)
+                this.error = error
+            }
+        },
+
+        async reservSeats(payload) {
+            this.loading = true
+            this.error = null
+            try {
+                const response = await api.post('/api/train/reserv/train', payload)
+                console.log(response);
+                
+            } catch (error) {
+                console.error('좌석지정에 실패했습니다.', error);
+                this.error = error
+                throw error
+            } finally {
+                this.loading = false
+            }
+        },
 
     }
 })
